@@ -24,7 +24,7 @@ torch.manual_seed(0)
 
 def _save_config_file(model_checkpoints_folder):
     if not os.path.exists(model_checkpoints_folder):
-        os.makedirs(model_checkpoints_folder)
+        os.makedirs(model_checkpoints_folder, exist_ok=True)
         shutil.copy('./config.yaml', os.path.join(model_checkpoints_folder, 'config.yaml'))
 
 
@@ -38,7 +38,11 @@ class SimCLR(object):
         self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
 
     def _get_device(self):
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        cuda_n = os.environ.get('SIM_CUDA', '0')
+        if cuda_n == 'cpu' or not torch.cuda.is_available():
+            device = 'cpu'
+        else:
+            device = f'cuda:{cuda_n}'
         print("Running on:", device)
         return device
 
@@ -110,7 +114,8 @@ class SimCLR(object):
                 if valid_loss < best_valid_loss:
                     # save the model weights
                     best_valid_loss = valid_loss
-                    torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
+                    torch.save(model.state_dict(), os.path.join(model_checkpoints_folder,
+                                                            f'{self.dataset.name}-model-{epoch_counter}.pth'))
 
                 self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
                 valid_n_iter += 1

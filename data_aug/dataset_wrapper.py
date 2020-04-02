@@ -4,26 +4,29 @@ from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision.transforms as transforms
 from data_aug.gaussian_blur import GaussianBlur
 from torchvision import datasets
+import os
 
 np.random.seed(0)
 
 
 class DataSetWrapper(object):
 
-    def __init__(self, batch_size, num_workers, valid_size, input_shape, s):
+    def __init__(self, batch_size, num_workers, valid_size, input_shape, s, name):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.valid_size = valid_size
         self.s = s
         self.input_shape = eval(input_shape)
+        self.name = name
 
     def get_data_loaders(self):
         data_augment = self._get_simclr_pipeline_transform()
 
-        train_dataset = datasets.STL10('./data', split='train+unlabeled', download=True,
-                                       transform=SimCLRDataTransform(data_augment))
-
-        train_loader, valid_loader = self.get_train_validation_data_loaders(train_dataset)
+        os.makedirs('./data', exist_ok=True)
+        if self.name == 'stl10':
+            train_loader, valid_loader = self.get_stl_loaders(data_augment)
+        elif self.name == 'celeba':
+            train_loader, valid_loader = self.get_celeba_loaders(data_augment)
         return train_loader, valid_loader
 
     def _get_simclr_pipeline_transform(self):
@@ -37,7 +40,9 @@ class DataSetWrapper(object):
                                               transforms.ToTensor()])
         return data_transforms
 
-    def get_train_validation_data_loaders(self, train_dataset):
+    def get_stl_loaders(self, data_augment):
+        train_dataset = datasets.STL10('./data', split='train+unlabeled', download=True,
+                                       transform=SimCLRDataTransform(data_augment))
         # obtain training indices that will be used for validation
         num_train = len(train_dataset)
         indices = list(range(num_train))
@@ -51,10 +56,22 @@ class DataSetWrapper(object):
         valid_sampler = SubsetRandomSampler(valid_idx)
 
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, sampler=train_sampler,
-                                  num_workers=self.num_workers, drop_last=True, shuffle=False)
+                                  num_workers=self.num_workers, drop_last=True, shuffle=True)
 
         valid_loader = DataLoader(train_dataset, batch_size=self.batch_size, sampler=valid_sampler,
                                   num_workers=self.num_workers, drop_last=True)
+        return train_loader, valid_loader
+
+    def get_celeba_loaders(self, data_augment):
+        train_dataset = datasets.CelebA('./data', split='train', download=True,
+                                        transform=SimCLRDataTransform(data_augment))
+        valid_dataset = datasets.CelebA('./data', split='valid', download=True,
+                                        transform=SimCLRDataTransform(data_augment))
+
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, 
+                                    num_workers=self.num_workers, drop_last=True, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
+                                    num_workers=self.num_workers, drop_last=True)
         return train_loader, valid_loader
 
 
