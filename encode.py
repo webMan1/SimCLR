@@ -2,6 +2,7 @@ import os
 import argparse
 import torch
 from torch.utils.data import DataLoader
+import torchvision.transforms as transforms
 from torchvision import datasets
 from models.resnet_simclr import ResNetSimCLR
 
@@ -10,13 +11,14 @@ def encode(save_root, model_file, data_folder, dataset_name='celeba', batch_size
     os.makedirs(data_folder, exist_ok=True)
 
     if dataset_name == 'celeba':
-        train_loader = DataLoader(datasets.CelebA(data_folder, split='train', download=True),
+        train_loader = DataLoader(datasets.CelebA(data_folder, split='train', download=True, transform=transforms.ToTensor()),
                                     batch_size=batch_size, shuffle=False)
-        valid_loader = DataLoader(datasets.CelebA(data_folder, split='valid', download=True),
+        valid_loader = DataLoader(datasets.CelebA(data_folder, split='valid', download=True, transform=transforms.ToTensor()),
                                     batch_size=batch_size, shuffle=False)
 
     model = ResNetSimCLR('resnet50', out_dim)
-    model.load_state_dict(torch.load(model_file), map_location=device)
+    model.load_state_dict(torch.load(model_file, map_location=device))
+    model = model.to(device)
     model.eval()
 
     print('Starting on training data')
