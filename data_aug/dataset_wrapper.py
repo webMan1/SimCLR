@@ -5,19 +5,21 @@ import torchvision.transforms as transforms
 from data_aug.gaussian_blur import GaussianBlur
 from torchvision import datasets
 import os
+from data_aug.stanfordcars import CarsDataset
 
 np.random.seed(0)
 
 
 class DataSetWrapper(object):
 
-    def __init__(self, batch_size, num_workers, valid_size, input_shape, s, name):
+    def __init__(self, batch_size, num_workers, valid_size, input_shape, s, name, data_root):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.valid_size = valid_size
         self.s = s
         self.input_shape = eval(input_shape)
         self.name = name
+        self.data_root = data_root
 
     def get_data_loaders(self):
         data_augment = self._get_simclr_pipeline_transform()
@@ -27,6 +29,8 @@ class DataSetWrapper(object):
             train_loader, valid_loader = self.get_stl_loaders(data_augment)
         elif self.name == 'celeba':
             train_loader, valid_loader = self.get_celeba_loaders(data_augment)
+        elif self.name == 'stanfordCars':
+            train_loader, valid_loader = self.get_stanford_cars_loaders(data_augment)
         return train_loader, valid_loader
 
     def _get_simclr_pipeline_transform(self):
@@ -37,11 +41,13 @@ class DataSetWrapper(object):
                                               transforms.RandomApply([color_jitter], p=0.8),
                                               transforms.RandomGrayscale(p=0.2),
                                               GaussianBlur(kernel_size=int(0.1 * self.input_shape[0])),
-                                              transforms.ToTensor()])
+                                              transforms.ToTensor(),
+                                              transforms.Lambda(lambda x: x.repeat(3,1,1) if x.shape[0] == 1 else x)
+                                              ])
         return data_transforms
 
     def get_stl_loaders(self, data_augment):
-        train_dataset = datasets.STL10('./data', split='train+unlabeled', download=True,
+        train_dataset = datasets.STL10(self.data_root, split='train+unlabeled', download=True,
                                        transform=SimCLRDataTransform(data_augment))
         # obtain training indices that will be used for validation
         num_train = len(train_dataset)
@@ -63,13 +69,27 @@ class DataSetWrapper(object):
         return train_loader, valid_loader
 
     def get_celeba_loaders(self, data_augment):
-        train_dataset = datasets.CelebA('./data', split='train', download=True,
+        train_dataset = datasets.CelebA(self.data_root, split='train', download=True,
                                         transform=SimCLRDataTransform(data_augment))
-        valid_dataset = datasets.CelebA('./data', split='valid', download=True,
+        valid_dataset = datasets.CelebA(self.data_root, split='valid', download=True,
                                         transform=SimCLRDataTransform(data_augment))
 
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, 
                                     num_workers=self.num_workers, drop_last=True, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
+                                    num_workers=self.num_workers, drop_last=True)
+        return train_loader, valid_loader
+
+    def get_stanford_cars_loaders(self, data_augment):
+        train_data_dir = os.path.join(self.data_root, 'cars_train/')
+        train_annos = os.path.join(self.data_root, 'devkit/cars_train_annos.mat')
+        train_dataset = CarsDataset(train_annos, train_data_dir, SimCLRDataTransform(data_augment))
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size,
+                                    num_workers=self.num_workers, drop_last=True, shuffle=True)
+
+        valid_data_dir = os.path.join(self.data_root, 'cars_test/')
+        valid_annos = os.path.join(self.data_root, 'devkit/cars_test_annos_withlabels.mat')
+        valid_dataset = CarsDataset(valid_annos, valid_data_dir, SimCLRDataTransform(data_augment))
         valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
                                     num_workers=self.num_workers, drop_last=True)
         return train_loader, valid_loader
