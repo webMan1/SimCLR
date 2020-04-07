@@ -1,3 +1,9 @@
+import os
+import torch
+from torch.utils.data import Dataset
+import scipy.io
+from PIL import Image
+
 class CarsDataset(Dataset):
     def __init__(self, mat_anno, data_dir, transform=None):
         self.full_data_set = scipy.io.loadmat(mat_anno)

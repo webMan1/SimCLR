@@ -24,7 +24,8 @@ class DataSetWrapper(object):
     def get_data_loaders(self):
         data_augment = self._get_simclr_pipeline_transform()
 
-        os.makedirs('./data', exist_ok=True)
+        os.makedirs(self.data_root, exist_ok=True)
+        print(f'Loading {self.name} data')
         if self.name == 'stl10':
             train_loader, valid_loader = self.get_stl_loaders(data_augment)
         elif self.name == 'celeba':

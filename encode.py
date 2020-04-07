@@ -16,7 +16,7 @@ def encode(save_root, model_file, data_folder, dataset_name='celeba', batch_size
                                     batch_size=batch_size, shuffle=False)
         valid_loader = DataLoader(datasets.CelebA(data_folder, split='valid', download=True, transform=transforms.ToTensor()),
                                     batch_size=batch_size, shuffle=False)
-    if dataset_name == 'celeba':
+    if dataset_name == 'stanfordCars':
         t = transforms.Compose([
             transforms.Resize(512),
             transforms.CenterCrop(512),
