@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torchvision import datasets
 from models.resnet_simclr import ResNetSimCLR
+from data_aug.stanfordcars import CarsDataset
 
 def encode(save_root, model_file, data_folder, dataset_name='celeba', batch_size=64, device='cuda:0', out_dim=256):
     os.makedirs(save_root, exist_ok=True)
@@ -15,6 +16,19 @@ def encode(save_root, model_file, data_folder, dataset_name='celeba', batch_size
                                     batch_size=batch_size, shuffle=False)
         valid_loader = DataLoader(datasets.CelebA(data_folder, split='valid', download=True, transform=transforms.ToTensor()),
                                     batch_size=batch_size, shuffle=False)
+    if dataset_name == 'celeba':
+        t = transforms.Compose([
+            transforms.Resize(512),
+            transforms.CenterCrop(512),
+            transforms.ToTensor(),
+            transforms.Lambda(lambda x: x.repeat(3,1,1) if x.shape[0] == 1 else x)
+        ])
+        train_data_dir = os.path.join(data_folder, 'cars_train/')
+        train_annos = os.path.join(data_folder, 'devkit/cars_train_annos.mat')
+        train_loader = DataLoader(CarsDataset(train_annos, train_data_dir, t), batch_size=batch_size, shuffle=False)
+        valid_data_dir = os.path.join(data_folder, 'cars_test/')
+        valid_annos = os.path.join(data_folder, 'devkit/cars_test_annos_withlabels.mat')
+        valid_loader = DataLoader(CarsDataset(valid_annos, valid_data_dir, t), batch_size=batch_size, shuffle=False)
 
     model = ResNetSimCLR('resnet50', out_dim)
     model.load_state_dict(torch.load(model_file, map_location=device))
