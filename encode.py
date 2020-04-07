@@ -41,15 +41,17 @@ def encode(save_root, model_file, data_folder, dataset_name='celeba', batch_size
         x = x.to(device)
         h, _ = model(x)
         train_encodings.append(h.cpu().detach())
-    torch.save(torch.cat(train_encodings, dim=0), os.path.join(save_root, 'train_encodings.pt'))
+    torch.save(torch.cat(train_encodings, dim=0), os.path.join(save_root, f'{dataset_name}-train_encodings.pt'))
 
     print('Starting on validation data')
     valid_encodings = []
     for x, _ in valid_loader:
         x = x.to(device)
         h, _ = model(x)
+        if len(h.shape) == 1:
+            h = h.unsqueeze(0)
         valid_encodings.append(h.cpu().detach())
-    torch.save(torch.cat(valid_encodings, dim=0), os.path.join(save_root, 'valid_encodings.pt'))
+    torch.save(torch.cat(valid_encodings, dim=0), os.path.join(save_root, f'{dataset_name}-valid_encodings.pt'))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
