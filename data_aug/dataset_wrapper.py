@@ -6,6 +6,7 @@ from data_aug.gaussian_blur import GaussianBlur
 from torchvision import datasets
 import os
 from data_aug.stanfordcars import CarsDataset
+from data_aug.compcars import CompCars
 
 np.random.seed(0)
 
@@ -32,6 +33,8 @@ class DataSetWrapper(object):
             train_loader, valid_loader = self.get_celeba_loaders(data_augment)
         elif self.name == 'stanfordCars':
             train_loader, valid_loader = self.get_stanford_cars_loaders(data_augment)
+        elif self.name == 'compCars':
+
         return train_loader, valid_loader
 
     def _get_simclr_pipeline_transform(self):
@@ -94,6 +97,12 @@ class DataSetWrapper(object):
         valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
                                     num_workers=self.num_workers, drop_last=True)
         return train_loader, valid_loader
+
+    def get_compcars_loaders(self, data_augment):
+        train_loader = DataLoader(CompCars(self.data_root, True, SimCLRDataTransform(data_augment)), batch_size=self.batch_size,
+                                    num_workers=self.num_workers, drop_last=True, shuffle=True)
+        test_loader = DataLoader(CompCars(self.data_root, False, SimCLRDataTransform(data_augment)), batch_size=self.batch_size,
+                                    num_workers=self.num_workers, drop_last=True)
 
 
 class SimCLRDataTransform(object):

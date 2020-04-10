@@ -15,8 +15,8 @@ dataset:
   input_shape: (256,256,3)
   num_workers: 0
   valid_size: 0.05
-  name: "stanfordCars"
-  data_root: "/multiview/datasets/StanfordCars"
+  name: "compCars"
+  data_root: "/multiview/datasets/downloads/compcars/data/"
 
 loss:
   temperature: 0.5
