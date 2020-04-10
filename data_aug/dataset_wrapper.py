@@ -34,7 +34,7 @@ class DataSetWrapper(object):
         elif self.name == 'stanfordCars':
             train_loader, valid_loader = self.get_stanford_cars_loaders(data_augment)
         elif self.name == 'compCars':
-
+            train_loader, valid_loader = self.get_compcars_loaders(data_augment)
         return train_loader, valid_loader
 
     def _get_simclr_pipeline_transform(self):
@@ -103,6 +103,7 @@ class DataSetWrapper(object):
                                     num_workers=self.num_workers, drop_last=True, shuffle=True)
         test_loader = DataLoader(CompCars(self.data_root, False, SimCLRDataTransform(data_augment)), batch_size=self.batch_size,
                                     num_workers=self.num_workers, drop_last=True)
+        return train_loader, test_loader
 
 
 class SimCLRDataTransform(object):

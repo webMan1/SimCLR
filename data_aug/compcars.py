@@ -8,13 +8,13 @@ class CompCars(Dataset):
         self.transform = transform
         self.data_root = data_root
         if train:
-            split_file = os.join(data_root, 'train_test_split/classification/train.txt')
+            split_file = os.path.join(data_root, 'train_test_split/classification/train.txt')
         else:
-            split_file = os.join(data_root, 'train_test_split/classification/test.txt')
+            split_file = os.path.join(data_root, 'train_test_split/classification/test.txt')
         self.images = []
         with open(split_file, 'r') as f:
             for line in f:
-                self.images.append(line)
+                self.images.append(line.strip())
 
     def __len__(self):
         return len(self.images)
