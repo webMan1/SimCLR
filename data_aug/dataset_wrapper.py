@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 from data_aug.gaussian_blur import GaussianBlur
 from torchvision import datasets
 import os
-from data_aug.stanfordcars import CarsDataset
+from data_aug.stanfordcars import CarsDataset, StanfordCarsMini
 from data_aug.compcars import CompCars
 
 np.random.seed(0)
@@ -33,6 +33,8 @@ class DataSetWrapper(object):
             train_loader, valid_loader = self.get_celeba_loaders(data_augment)
         elif self.name == 'stanfordCars':
             train_loader, valid_loader = self.get_stanford_cars_loaders(data_augment)
+        elif self.name == 'stanfordCarsMini':
+            train_loader, valid_loader = self.get_stanford_cars_mini_loaders(data_augment)
         elif self.name == 'compCars':
             train_loader, valid_loader = self.get_compcars_loaders(data_augment)
         return train_loader, valid_loader
@@ -98,12 +100,26 @@ class DataSetWrapper(object):
                                     num_workers=self.num_workers, drop_last=True)
         return train_loader, valid_loader
 
+    def get_stanford_cars_mini_loaders(self, data_augment):
+        train_data_dir = os.path.join(self.data_root, 'cars_train/')
+        train_annos = os.path.join(self.data_root, 'devkit/cars_train_annos.mat')
+        train_dataset = StanfordCarsMini(train_annos, train_data_dir, SimCLRDataTransform(data_augment))
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size,
+                                    num_workers=self.num_workers, drop_last=True, shuffle=True)
+
+        valid_data_dir = os.path.join(self.data_root, 'cars_test/')
+        valid_annos = os.path.join(self.data_root, 'devkit/cars_test_annos_withlabels.mat')
+        valid_dataset = StanfordCarsMini(valid_annos, valid_data_dir, SimCLRDataTransform(data_augment))
+        valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
+                                    num_workers=self.num_workers, drop_last=True)
+        return train_loader, valid_loader
+
     def get_compcars_loaders(self, data_augment):
         train_loader = DataLoader(CompCars(self.data_root, True, SimCLRDataTransform(data_augment)), batch_size=self.batch_size,
                                     num_workers=self.num_workers, drop_last=True, shuffle=True)
-        test_loader = DataLoader(CompCars(self.data_root, False, SimCLRDataTransform(data_augment)), batch_size=self.batch_size,
+        valid_loader = DataLoader(CompCars(self.data_root, False, SimCLRDataTransform(data_augment)), batch_size=self.batch_size,
                                     num_workers=self.num_workers, drop_last=True)
-        return train_loader, test_loader
+        return train_loader, valid_loader
 
 
 class SimCLRDataTransform(object):
