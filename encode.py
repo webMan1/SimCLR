@@ -36,10 +36,8 @@ def encode(save_root, model_file, data_folder, model_name='ca', dataset_name='ce
             transforms.CenterCrop(512),
             transforms.ToTensor()
         ])
-        train_loader = DataLoader(CompCars(self.data_root, True, t), batch_size=self.batch_size,
-                                    num_workers=self.num_workers, drop_last=True, shuffle=False)
-        test_loader = DataLoader(CompCars(self.data_root, False, t), batch_size=self.batch_size,
-                                    num_workers=self.num_workers, drop_last=True, shuffle=False)
+        train_loader = DataLoader(CompCars(data_folder, True, t), batch_size=batch_size, shuffle=False)
+        test_loader = DataLoader(CompCars(data_folder, False, t), batch_size=batch_size, shuffle=False)
 
 
     model = ResNetSimCLR('resnet50', out_dim)
