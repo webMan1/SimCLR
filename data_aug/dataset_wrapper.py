@@ -109,7 +109,7 @@ class DataSetWrapper(object):
 
         valid_data_dir = os.path.join(self.data_root, 'cars_test/')
         valid_annos = os.path.join(self.data_root, 'devkit/cars_test_annos_withlabels.mat')
-        valid_dataset = StanfordCarsMini(valid_annos, valid_data_dir, SimCLRDataTransform(data_augment))
+        valid_dataset = CarsDataset(valid_annos, valid_data_dir, SimCLRDataTransform(data_augment))
         valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
                                     num_workers=self.num_workers, drop_last=True)
         return train_loader, valid_loader
