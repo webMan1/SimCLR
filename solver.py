@@ -49,6 +49,7 @@ class CESolver:
                     min_val_loss = vl
                     self.save(model, vl, e)
         
+        sched.step()
         if (num_epochs-1) % val_freq != 0:
             vl, va = self.validate(model, objective)
             if va > max_val_acc:
