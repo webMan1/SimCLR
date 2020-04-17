@@ -77,7 +77,7 @@ class CESolver:
                 va = accuracy(y_hat, y)
                 va_list.append(va * batch_size)
                 num_items += batch_size
-            
+
         total_vl = sum(vl_list) / num_items
         total_acc = sum(va_list) / num_items
         self.valid_loss.append((len(self.train_loss), total_vl))
