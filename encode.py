@@ -37,7 +37,7 @@ def encode(save_root, model_file, data_folder, model_name='ca', dataset_name='ce
             transforms.ToTensor()
         ])
         train_loader = DataLoader(CompCars(data_folder, True, t), batch_size=batch_size, shuffle=False)
-        test_loader = DataLoader(CompCars(data_folder, False, t), batch_size=batch_size, shuffle=False)
+        valid_loader = DataLoader(CompCars(data_folder, False, t), batch_size=batch_size, shuffle=False)
 
 
     model = ResNetSimCLR('resnet50', out_dim)
