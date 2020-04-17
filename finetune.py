@@ -3,6 +3,7 @@ import os
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
+from torch.utils.data import DataLoader
 from data_aug.stanfordcars import StanfordCarsMini
 from models.resnet_simclr import ResNetSimCLR
 from solver import CESolver
