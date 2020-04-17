@@ -64,6 +64,7 @@ class CESolver:
         model.eval()
         vl_list = []
         va_list = []
+        num_items = 0
         with torch.no_grad():
             for x, y in self.valid_loader:
                 x = x.to(self.device)
@@ -71,12 +72,14 @@ class CESolver:
                 y_hat = model(x)
 
                 vl = objective(y_hat, y).item()
-                vl_list.append(vl * y.shape[0])
+                batch_size = y.shape[0]
+                vl_list.append(vl * batch_size)
                 va = accuracy(y_hat, y)
-                va_list.append(va * y.shape[0])
+                va_list.append(va * batch_size)
+                num_items += batch_size
             
-        total_vl = sum(vl_list) / len(self.valid_loader)
-        total_acc = sum(va_list) / len(self.valid_loader)
+        total_vl = sum(vl_list) / num_items
+        total_acc = sum(va_list) / num_items
         self.valid_loss.append((len(self.train_loss), total_vl))
         self.valid_acc.append((len(self.train_acc), total_acc))
         model.train()
