@@ -38,8 +38,8 @@ class CESolver:
                 loss.backward()
                 optim.step()
 
-                train_loss.append(loss.item())
-                train_acc.append(accuracy(y_hat, y))
+                self.train_loss.append(loss.item())
+                self.train_acc.append(accuracy(y_hat, y))
 
             if e % val_freq == 0:
                 vl, va = self.validate(model, objective)
