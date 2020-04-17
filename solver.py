@@ -71,9 +71,9 @@ class CESolver:
                 y_hat = model(x)
 
                 vl = objective(y_hat, y).item()
-                vl_list.append(vl * y.shape[0].item())
+                vl_list.append(vl * y.shape[0])
                 va = accuracy(y_hat, y)
-                va_list.append(va * y.shape[0].item())
+                va_list.append(va * y.shape[0])
             
         total_vl = sum(vl_list) / len(self.valid_loader)
         total_acc = sum(va_list) / len(self.valid_loader)
