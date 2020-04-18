@@ -7,6 +7,8 @@ from torchvision import datasets
 import os
 from data_aug.stanfordcars import CarsDataset, StanfordCarsMini
 from data_aug.compcars import CompCars
+from data_aug.CelebA import SubCelebaA
+import re
 
 np.random.seed(0)
 
@@ -31,6 +33,10 @@ class DataSetWrapper(object):
             train_loader, valid_loader = self.get_stl_loaders(data_augment)
         elif self.name == 'celeba':
             train_loader, valid_loader = self.get_celeba_loaders(data_augment)
+        elif re.match("subceleba\{(\w+)\}", "subceleba{ab}"):
+            m = re.match("subceleba\{(\w+)\}", "subceleba{ab}")
+            feature = m.group(1)
+            train_loader, valid_loader = self.get_sub_celeba_loaders(feature, data_augment)
         elif self.name == 'stanfordCars':
             train_loader, valid_loader = self.get_stanford_cars_loaders(data_augment)
         elif self.name == 'stanfordCarsMini':
@@ -79,6 +85,16 @@ class DataSetWrapper(object):
                                         transform=SimCLRDataTransform(data_augment))
         valid_dataset = datasets.CelebA(self.data_root, split='valid', download=True,
                                         transform=SimCLRDataTransform(data_augment))
+
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, 
+                                    num_workers=self.num_workers, drop_last=True, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, 
+                                    num_workers=self.num_workers, drop_last=True)
+        return train_loader, valid_loader
+
+    def get_sub_celeba_loaders(self, exc_feature:str, data_augment):
+        train_dataset = SubCelebaA(self.data_root, True, exc_feature, exclude=True, transform=SimCLRDataTransform(data_augment))
+        valid_dataset = SubCelebaA(self.data_root, False, exc_feature, exclude=True, transform=SimCLRDataTransform(data_augment))
 
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, 
                                     num_workers=self.num_workers, drop_last=True, shuffle=True)
