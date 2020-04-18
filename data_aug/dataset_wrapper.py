@@ -33,8 +33,8 @@ class DataSetWrapper(object):
             train_loader, valid_loader = self.get_stl_loaders(data_augment)
         elif self.name == 'celeba':
             train_loader, valid_loader = self.get_celeba_loaders(data_augment)
-        elif re.match("subceleba\{(\w+)\}", "subceleba{ab}"):
-            m = re.match("subceleba\{(\w+)\}", "subceleba{ab}")
+        elif re.match("subceleba\{(\w+)\}", self.name):
+            m = re.match("subceleba\{(\w+)\}", self.name)
             feature = m.group(1)
             train_loader, valid_loader = self.get_sub_celeba_loaders(feature, data_augment)
         elif self.name == 'stanfordCars':
