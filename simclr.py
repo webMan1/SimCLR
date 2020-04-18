@@ -97,7 +97,7 @@ class SimCLR(object):
         valid_len = len(valid_loader)
 
         loop = tqdm(total=num_epochs * train_len, position=0)
-        
+
         for epoch_counter in range(num_epochs):
             for it, ((xis, xjs), _) in enumerate(train_loader):
                 optimizer.zero_grad()
@@ -120,7 +120,7 @@ class SimCLR(object):
                 n_iter += 1
 
                 loop.update(1)
-                loop.set_description(f"E {epoch_counter}/{num_epochs}, it: {it}/{train_len}, Loss: {loss.item}")
+                loop.set_description(f"E {epoch_counter}/{num_epochs}, it: {it}/{train_len}, Loss: {loss.item()}")
 
             # validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
