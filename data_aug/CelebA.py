@@ -21,8 +21,8 @@ class SubCelebaA(Dataset):
         self.dataset = dataset
     
     def __len__(self):
-        return len(self.indices_without)
+        return len(self.selected_indices)
 
     def __getitem__(self, idx):
-        translated_index = self.indices_without[idx]
+        translated_index = self.selected_indices[idx]
         return self.dataset[translated_index]
