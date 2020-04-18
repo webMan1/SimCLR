@@ -6,6 +6,7 @@ from loss.nt_xent import NTXentLoss
 import os
 import shutil
 import sys
+from tqdm import tqdm
 
 apex_support = False
 try:
@@ -77,6 +78,8 @@ class SimCLR(object):
             model, optimizer = amp.initialize(model, optimizer,
                                               opt_level='O2',
                                               keep_batchnorm_fp32=True)
+        else:
+            print("No apex_support or config not fp16 precision")
 
         model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
 
@@ -87,8 +90,16 @@ class SimCLR(object):
         valid_n_iter = 0
         best_valid_loss = np.inf
 
-        for epoch_counter in range(self.config['epochs']):
-            for (xis, xjs), _ in train_loader:
+        eval_freq = self.config['eval_every_n_epochs']
+        num_epochs = self.config["epochs"]
+        
+        train_len = len(train_loader)
+        valid_len = len(valid_loader)
+
+        loop = tqdm(total=num_epochs * train_len, position=0)
+        
+        for epoch_counter in range(num_epochs):
+            for it, ((xis, xjs), _) in enumerate(train_loader):
                 optimizer.zero_grad()
 
                 xis = xis.to(self.device)
@@ -107,6 +118,9 @@ class SimCLR(object):
 
                 optimizer.step()
                 n_iter += 1
+
+                loop.update(1)
+                loop.set_description(f"E {epoch_counter}/{num_epochs}, it: {it}/{train_len}, Loss: {loss.item}")
 
             # validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
