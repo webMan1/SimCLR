@@ -62,7 +62,7 @@ class SimCLR(object):
         loss = self.nt_xent_criterion(zis, zjs)
         return loss
 
-    def train(self):
+    def train(self, callback=lambda m, e, l: None):
 
         train_loader, valid_loader = self.dataset.get_data_loaders()
 
@@ -125,6 +125,7 @@ class SimCLR(object):
             # validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
                 valid_loss = self._validate(model, valid_loader)
+                callback(model, epoch_counter, valid_loss)
                 if valid_loss < best_valid_loss:
                     # save the model weights
                     best_valid_loss = valid_loss
